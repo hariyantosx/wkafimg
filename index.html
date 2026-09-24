@@ -67,6 +67,7 @@ button:disabled{opacity:.5;cursor:default}
 .cr{text-align:center;color:var(--mut);font-size:13px;margin:28px 0 0}
 .cr a{color:var(--ac);font-weight:600}
 @media(max-width:600px){.hdr{flex-direction:column;align-items:flex-start;gap:10px}.hdr svg{width:130px}}
+.rs{font-size:12px;color:var(--mut)}
 </style></head>
 <body><main>
 <header class="hdr"><svg viewBox="0 0 200 56" role="img" aria-label="Logo WKAFimg" xmlns="http://www.w3.org/2000/svg">
@@ -80,8 +81,8 @@ button:disabled{opacity:.5;cursor:default}
 <path fill="#FF8A1F" transform="translate(127.90 33.8) scale(0.01533 -0.01533)" d="M780 0V607Q780 892 616 892Q531 892 477.5 805.0Q424 718 424 580V0H143V840Q143 927 140.5 982.5Q138 1038 135 1082H403Q406 1063 411.0 980.5Q416 898 416 867H420Q472 991 549.5 1047.0Q627 1103 735 1103Q983 1103 1036 867H1042Q1097 993 1174.0 1048.0Q1251 1103 1370 1103Q1528 1103 1611.0 995.5Q1694 888 1694 687V0H1415V607Q1415 892 1251 892Q1169 892 1116.5 812.5Q1064 733 1059 593V0Z"/>
 <path fill="#FF8A1F" transform="translate(155.82 33.8) scale(0.01533 -0.01533)" d="M596 -434Q398 -434 277.5 -358.5Q157 -283 129 -143L410 -110Q425 -175 474.5 -212.0Q524 -249 604 -249Q721 -249 775.0 -177.0Q829 -105 829 37V94L831 201H829Q736 2 481 2Q292 2 188.0 144.0Q84 286 84 550Q84 815 191.0 959.0Q298 1103 502 1103Q738 1103 829 908H834Q834 943 838.5 1003.0Q843 1063 848 1082H1114Q1108 974 1108 832V33Q1108 -198 977.0 -316.0Q846 -434 596 -434ZM831 556Q831 723 771.5 816.5Q712 910 602 910Q377 910 377 550Q377 197 600 197Q712 197 771.5 290.5Q831 384 831 556Z"/>
 </svg>
-<div><h1>_</h1>
-<p class="sub">_</p></div></header>
+<div><h1>AutoMetaFlash</h1>
+<p class="sub">Beres langsung submit</p></div></header>
 
 <section class="panel"><h2><span class="n">1</span>Pengaturan</h2>
 <div class="grid">
@@ -96,7 +97,7 @@ button:disabled{opacity:.5;cursor:default}
 </section>
 
 <section class="panel"><h2><span class="n">2</span>Tambah file</h2>
-<div id="drop" tabindex="0" role="button"><b>Tarik file JPG atau SVG ke sini</b>atau klik untuk memilih banyak file sekaligus<br><small>Resolusi asli file tidak diubah. Hanya salinan kecil yang dikirim ke Gemini untuk dibaca.</small></div>
+<div id="drop" tabindex="0" role="button"><b>Tarik file JPG atau SVG ke sini</b>atau klik untuk memilih banyak file sekaligus<br><small>Resolusi asli file tidak diubah. Hanya salinan kecil yang dikirim ke Gemini untuk dibaca. JPG di bawah 4 megapiksel otomatis ditolak; SVG (vektor) dikecualikan.</small></div>
 <input id="pick" type="file" multiple accept=".jpg,.jpeg,.svg" hidden>
 </section>
 
@@ -219,7 +220,7 @@ async function prep(it){
 }
 function addCard(it){
   const el=document.createElement('article');el.className='card';el.dataset.s='idle';
-  el.innerHTML=`<div class="pb"><i></i></div><div class="th"><img alt=""><code class="nn"></code></div><div class="f">
+  el.innerHTML=`<div class="pb"><i></i></div><div class="th"><img alt=""><code class="nn"></code><small class="rs"></small></div><div class="f">
   <div class="hd"><b class="n0"></b><span class="pill">${LBL.idle}</span></div>
   <div><label>Judul <em class="ct"></em></label><input class="t"></div>
   <div><label>Deskripsi <em class="cd"></em></label><textarea class="d" rows="2"></textarea></div>
@@ -227,6 +228,7 @@ function addCard(it){
   <div class="row"><button class="g">Generate</button><button class="x">Hapus</button></div></div>`;
   it.el=el;it.t=el.querySelector('.t');it.d=el.querySelector('.d');it.k=el.querySelector('.k');it.state='idle';
   el.querySelector('.n0').textContent=it.file.name;
+  el.querySelector('.rs').textContent=it.svg?'Vektor (tanpa batas MP)':`${it.d.w}×${it.d.h} · ${(it.d.w*it.d.h/1e6).toFixed(1)} MP`;
   it.thumb=URL.createObjectURL(it.file);el.querySelector('img').src=it.thumb;
   [it.t,it.d,it.k].forEach(e=>e.oninput=updAll);
   el.querySelector('.g').onclick=()=>gen(it);
@@ -234,15 +236,45 @@ function addCard(it){
   $('#list').appendChild(el);
   it.ready=pq=pq.then(()=>prep(it)).catch(()=>{});
 }
-function addFiles(files){
-  toast('');const bad=[];
+const MINPX=4e6;
+function jpegSize(buf){
+  const u=new Uint8Array(buf);if(u[0]!==0xFF||u[1]!==0xD8)return null;
+  let p=2;
+  while(p+9<u.length){
+    if(u[p]!==0xFF){p++;continue}
+    const m=u[p+1];
+    if(m===0xFF){p++;continue}
+    if(m===0xD8||m===0x01||(m>=0xD0&&m<=0xD7)){p+=2;continue}
+    if(m>=0xC0&&m<=0xCF&&m!==0xC4&&m!==0xC8&&m!==0xCC)return{h:(u[p+5]<<8)|u[p+6],w:(u[p+7]<<8)|u[p+8]};
+    if(m===0xDA)return null;
+    p+=2+((u[p+2]<<8)|u[p+3]);
+  }
+  return null;
+}
+async function dims(f){
+  return jpegSize(await f.slice(0,262144).arrayBuffer())||jpegSize(await f.arrayBuffer())
+    ||await createImageBitmap(f).then(b=>({w:b.width,h:b.height}));
+}
+let adding=Promise.resolve();
+const addFiles=files=>{adding=adding.then(()=>addFilesNow(files))};
+async function addFilesNow(files){
+  toast('');const bad=[],low=[];
   for(const f of files){
     const svg=/\.svg$/i.test(f.name);
     if(!svg&&!/\.jpe?g$/i.test(f.name)){bad.push(f.name);continue}
-    const it={file:f,svg};items.push(it);addCard(it);
+    let d=null;
+    if(!svg){
+      try{d=await dims(f)}catch(e){}
+      if(!d||!d.w||!d.h){bad.push(f.name+' (tidak terbaca)');continue}
+      if(d.w*d.h<MINPX){low.push(`${f.name} (${d.w}×${d.h} = ${(d.w*d.h/1e6).toFixed(1)} MP)`);continue}
+    }
+    const it={file:f,svg,d};items.push(it);addCard(it);
   }
   updAll();stat();
-  if(bad.length)toast('Dilewati (hanya JPG dan SVG yang didukung): '+bad.join(', '),1);
+  const m=[];
+  if(low.length)m.push('Ditolak, di bawah 4 megapiksel: '+low.join(', '));
+  if(bad.length)m.push('Dilewati (bukan JPG/SVG atau tidak terbaca): '+bad.join(', '));
+  if(m.length)toast(m.join('. '),1);
 }
 
 /* ---------- pengaturan & Gemini ---------- */
@@ -375,10 +407,10 @@ function csv(){
 const dz=$('#drop');
 dz.onclick=()=>$('#pick').click();
 dz.onkeydown=e=>{if(e.key==='Enter')$('#pick').click()};
-$('#pick').onchange=e=>{addFiles(e.target.files);e.target.value=''};
+$('#pick').onchange=e=>{addFiles([...e.target.files]);e.target.value=''};
 dz.ondragover=e=>{e.preventDefault();dz.classList.add('on')};
 dz.ondragleave=()=>dz.classList.remove('on');
-dz.ondrop=e=>{e.preventDefault();dz.classList.remove('on');addFiles(e.dataTransfer.files)};
+dz.ondrop=e=>{e.preventDefault();dz.classList.remove('on');addFiles([...e.dataTransfer.files])};
 $('#all').onclick=genAll;$('#pd').onclick=pickDir;$('#save').onclick=saveAll;$('#csv').onclick=csv;
 $('#clear').onclick=()=>{items.length=0;$('#list').innerHTML='';setJob('Siap digunakan',0,0);stat()};
 </script>
