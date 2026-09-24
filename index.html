@@ -2,105 +2,115 @@
 <html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Microstock Metadata</title>
 <style>
-:root{--bg:#f4f5f2;--fg:#1b1f1d;--card:#fff;--mut:#65706a;--bd:#d6dbd6;--ac:#146b5a;--er:#b3261e}
-@media(prefers-color-scheme:dark){:root{--bg:#141716;--fg:#e8ece9;--card:#1d2120;--mut:#8f9b95;--bd:#303634;--ac:#45b8a0;--er:#f2726b}}
+:root{--bg:#eef2f6;--card:#fff;--fg:#122033;--mut:#5c6b7d;--bd:#d5dde6;--ac:#1257c4;--ac2:#e59b00;--ok:#1a8f5a;--er:#c62e2e;--in:#f7f9fb}
+@media(prefers-color-scheme:dark){:root{--bg:#0e141c;--card:#161f2a;--fg:#e6edf5;--mut:#93a3b5;--bd:#263341;--ac:#5aa2ff;--ac2:#ffc247;--ok:#4cc38a;--er:#ff7a7a;--in:#111922}}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
-main{max-width:940px;margin:0 auto;padding:22px 16px 70px}
-h1{font-size:22px;margin:0 0 2px}
-.s{color:var(--mut);margin:0 0 16px}
-#help a{color:var(--ac);font-weight:600}
-.bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:10px}
-label{font-size:12px;color:var(--mut);display:block;margin-bottom:3px}
-input,select,textarea{width:100%;padding:8px 10px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--fg);font:inherit}
-input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--ac);outline-offset:1px}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.55 "Segoe UI",system-ui,-apple-system,sans-serif}
+main{max-width:980px;margin:0 auto;padding:26px 16px 200px}
+h1{font-size:26px;line-height:1.2;margin:0 0 4px;letter-spacing:-.01em}
+h2{font-size:16px;margin:0 0 12px;display:flex;align-items:center;gap:10px}
+.n{display:inline-grid;place-items:center;width:24px;height:24px;border-radius:50%;background:var(--ac);color:#fff;font-size:13px;flex:none}
+.sub{color:var(--mut);margin:0 0 20px}
+.panel{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin-bottom:12px}
+label{display:block;font-size:12.5px;color:var(--mut);margin:0 0 4px}
+label em{float:right;font-style:normal}
+label em.over{color:var(--er);font-weight:600}
+input,select,textarea{width:100%;padding:9px 11px;border:1px solid var(--bd);border-radius:9px;background:var(--in);color:var(--fg);font:inherit}
+input[type=checkbox]{width:auto;margin-right:6px}
 textarea{resize:vertical}
-button{padding:9px 14px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--fg);font:inherit;cursor:pointer}
-button.p{background:var(--ac);border-color:var(--ac);color:#fff}
+:focus-visible{outline:2px solid var(--ac);outline-offset:1px}
+button{padding:9px 15px;border-radius:9px;border:1px solid var(--bd);background:var(--card);color:var(--fg);font:inherit;cursor:pointer}
+button.p{background:var(--ac);border-color:var(--ac);color:#fff;font-weight:600}
 button:disabled{opacity:.5;cursor:default}
-#drop{border:2px dashed var(--bd);border-radius:12px;padding:26px 16px;text-align:center;color:var(--mut);margin:12px 0;cursor:pointer}
+.help{color:var(--mut);font-size:13px;margin:10px 0 0}
+.help a,.links a{color:var(--ac);font-weight:600}
+.links{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.links a{padding:8px 14px;border:1px solid var(--bd);border-radius:9px;text-decoration:none}
+#drop{border:2px dashed var(--bd);border-radius:12px;padding:30px 16px;text-align:center;color:var(--mut);cursor:pointer;background:var(--in)}
+#drop b{color:var(--fg);display:block;font-size:16px}
 #drop.on{border-color:var(--ac);color:var(--ac)}
-.acts{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
-#msg{color:var(--er);font-size:13px;min-height:18px;margin-bottom:6px}
-.card{display:flex;gap:14px;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:12px;margin-bottom:12px}
-.card img{width:130px;height:130px;object-fit:contain;background:rgba(128,128,128,.15);border-radius:6px;flex:none}
-.f{flex:1;min-width:0}
-.f>div{margin-bottom:8px}
-.h{display:flex;justify-content:space-between;font-size:12px;color:var(--mut);margin-bottom:2px}
-.st{font-size:12px;color:var(--mut)}
-.st.ok{color:var(--ac)}
-.st.er,.over{color:var(--er)}
-@media(max-width:560px){.card{flex-direction:column}.card img{width:100%;height:180px}}
+#msg{font-size:13.5px;min-height:20px;margin:0 0 10px}
+#msg.er{color:var(--er)}
+.card{display:grid;grid-template-columns:160px 1fr;background:var(--card);border:1px solid var(--bd);border-radius:14px;margin-bottom:14px;overflow:hidden}
+.pb{grid-column:1/-1;height:4px;background:var(--bd)}
+.pb i{display:block;height:100%;width:0;background:var(--ac);transition:width .3s}
+[data-s=queue] .pb i{width:12%;background:var(--ac2)}
+[data-s=run] .pb i{width:35%;background:var(--ac2);animation:sl 1s ease-in-out infinite alternate}
+[data-s=done] .pb i,[data-s=saved] .pb i{width:100%;background:var(--ok)}
+[data-s=err] .pb i{width:100%;background:var(--er)}
+@keyframes sl{from{margin-left:0}to{margin-left:65%}}
+@media(prefers-reduced-motion:reduce){[data-s=run] .pb i{animation:none}}
+.th{padding:14px;display:flex;flex-direction:column;gap:8px}
+.th img{width:100%;aspect-ratio:1;object-fit:contain;background:rgba(128,128,128,.14);border-radius:8px}
+.nn{font-size:12px;word-break:break-all;color:var(--ac);background:var(--in);border:1px solid var(--bd);border-radius:6px;padding:3px 6px}
+.f{padding:12px 14px 14px 0;min-width:0}
+.f>*{margin-bottom:8px}
+.hd{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.hd b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pill{font-size:12px;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:50%}
+[data-s=done] .pill,[data-s=saved] .pill{color:var(--ok)}
+[data-s=err] .pill{color:var(--er)}
+[data-s=run] .pill{color:var(--ac2)}
+.row{display:flex;gap:8px}
+.dock{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--bd);padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));box-shadow:0 -6px 20px rgba(0,0,0,.08)}
+.dk{max-width:980px;margin:0 auto;display:grid;gap:8px}
+.jr{display:flex;justify-content:space-between;gap:12px;font-size:13px;flex-wrap:wrap}
+.bar{height:8px;background:var(--bd);border-radius:8px;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--ac);transition:width .25s}
+.ac{display:flex;gap:8px;flex-wrap:wrap}
+@media(max-width:600px){.card{grid-template-columns:1fr}.f{padding:0 14px 14px}.th img{max-height:200px}}
 </style></head>
 <body><main>
 <h1>Microstock Metadata</h1>
-<p class="s">Buat judul, deskripsi, dan keyword dengan Google Gemini, lalu sisipkan langsung ke file JPG atau SVG (IPTC + XMP).</p>
+<p class="sub">Judul, deskripsi, dan keyword dari Gemini, disisipkan langsung ke JPG dan SVG, siap diunggah ke agensi.</p>
 
-<div class="bar">
-  <div><label for="key">Gemini API key (isi sekali, tersimpan di browser ini)</label><input id="key" type="password" placeholder="AIza..." autocomplete="off"></div>
-  <div><label for="model">Model Gemini (otomatis memilih Flash terbaru)</label><select id="model"></select></div>
-  <div><label for="ag">Agensi</label>
-    <select id="ag"><option value="adobe">Adobe Stock (judul 70, keyword 49)</option><option value="shutter">Shutterstock (deskripsi 200, keyword 50)</option><option value="generic">Umum (judul 100, keyword 50)</option></select></div>
+<section class="panel"><h2><span class="n">1</span>Pengaturan</h2>
+<div class="grid">
+  <div><label for="key">Gemini API key</label><input id="key" type="password" placeholder="AIza..." autocomplete="off"></div>
+  <div><label for="model">Model (otomatis Flash terbaru)</label><select id="model"></select></div>
+  <div><label for="ag">Agensi tujuan</label><select id="ag"><option value="adobe">Adobe Stock (judul 70, keyword 49)</option><option value="shutter">Shutterstock (deskripsi 200, keyword 50)</option><option value="generic">Umum (judul 100, keyword 50)</option></select></div>
+  <div><label for="par">Diproses bersamaan</label><select id="par"><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option><option>6</option></select></div>
 </div>
-<p class="s" id="help" style="font-size:13px;margin-bottom:10px"></p>
-<div style="margin-bottom:10px"><label for="hint">Konteks tambahan (opsional, berlaku untuk semua file)</label>
-  <input id="hint" placeholder="contoh: ilustrasi flat untuk tema bisnis, gaya minimalis"></div>
+<div><label for="hint">Konteks tambahan (opsional, berlaku untuk semua file)</label><input id="hint" placeholder="contoh: ilustrasi flat untuk tema bisnis"></div>
+<p class="help"><label style="display:inline;color:inherit"><input type="checkbox" id="ren" checked>Ganti nama file dari keyword pertama (nama-01, nama-02 jika sama)</label></p>
+<p class="help" id="help"></p>
+</section>
 
-<div id="drop" tabindex="0" role="button">Tarik file JPG / SVG ke sini, atau klik untuk memilih</div>
+<section class="panel"><h2><span class="n">2</span>Tambah file</h2>
+<div id="drop" tabindex="0" role="button"><b>Tarik file JPG atau SVG ke sini</b>atau klik untuk memilih banyak file sekaligus<br><small>Resolusi asli file tidak diubah. Hanya salinan kecil yang dikirim ke Gemini untuk dibaca.</small></div>
 <input id="pick" type="file" multiple accept=".jpg,.jpeg,.svg" hidden>
-<div id="msg"></div>
+</section>
 
-<div class="acts">
-  <button class="p" id="all">Generate semua</button>
-  <button id="save">Simpan file + metadata</button>
-  <button id="csv">Export CSV</button>
-  <button id="clear">Kosongkan daftar</button>
-</div>
+<h2 style="margin-top:22px"><span class="n">3</span>Periksa hasil, lalu simpan</h2>
+<div id="msg" role="status"></div>
 <div id="list"></div>
+
+<section class="panel"><h2><span class="n">4</span>Unggah ke agensi</h2>
+<p class="help" style="margin:0">Simpan file ke folder, lalu unggah lewat portal kontributor agensi (atau FTP dari pengaturan akun Anda). Tombol CSV menghasilkan file metadata sesuai format agensi yang dipilih di Pengaturan.</p>
+<div class="links"><a href="https://drive.google.com/drive/folders/1iKMY7RgcxiUQgTSSsNA8T5VI3jf8gkVV" target="_blank" rel="noopener">Folder Google Drive</a><a href="https://contributor.stock.adobe.com" target="_blank" rel="noopener">Adobe Stock</a><a href="https://submit.shutterstock.com" target="_blank" rel="noopener">Shutterstock</a><a href="https://contributor.freepik.com" target="_blank" rel="noopener">Freepik</a></div>
+</section>
 </main>
+
+<footer class="dock"><div class="dk">
+  <div class="jr"><span id="jl">Siap digunakan</span><span id="js">Belum ada file</span></div>
+  <div class="bar"><i id="jbar"></i></div>
+  <div class="ac">
+    <button class="p" id="all">Generate semua</button>
+    <button id="pd" title="Untuk Google Drive, pilih folder di dalam Google Drive for desktop, misalnya G:\My Drive\Stock. File otomatis tersinkron.">Folder: <span id="dirname">belum dipilih</span></button>
+    <button class="p" id="save">Simpan file</button>
+    <button id="csv">CSV agensi</button>
+    <button id="clear">Kosongkan</button>
+  </div>
+</div></footer>
 
 <script>
 const $=s=>document.querySelector(s);
 const PRESET={adobe:{t:70,k:49},shutter:{t:200,k:50},generic:{t:100,k:50}};
-const items=[];
-const GAP=6500;
-$('#help').innerHTML='Belum punya key? <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Buka Google AI Studio</a>, login dengan akun Google, klik Create API key, salin, lalu tempel di kolom di atas. Cukup sekali. Gratis tanpa kartu, tapi ada batas per menit sehingga prosesnya agak lambat.';
-try{$('#key').value=localStorage.getItem('mk_gemini')||''}catch(e){}
-function fillModels(list,pick){
-  const sel=$('#model');let sv='';
-  sel.innerHTML=list.map(m=>`<option value="${m}">${m}</option>`).join('');
-  try{sv=localStorage.getItem('mm_gemini')||''}catch(e){}
-  sel.value=list.includes(sv)?sv:(pick||list[0]);
-}
-fillModels(['gemini-2.5-flash','gemini-2.5-flash-lite']);
-async function detect(){
-  const key=$('#key').value.trim();if(!key)return;
-  try{
-    const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200',{headers:{'x-goog-api-key':key}});
-    const d=await r.json();if(!r.ok)throw new Error(d.error?.message||('HTTP '+r.status));
-    const bad=/image|tts|audio|live|embed|thinking|exp|robotics|computer/;
-    const v=n=>parseFloat(n.match(/^gemini-(\d+(?:\.\d+)?)/)[1]);
-    const ok=(d.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent'))
-      .map(m=>m.name.replace('models/','')).filter(n=>!bad.test(n)&&/^gemini-\d+(\.\d+)?-flash/.test(n))
-      .sort((a,b)=>v(b)-v(a)||(/lite/.test(a)-/lite/.test(b))||(/preview/.test(a)-/preview/.test(b)));
-    if(!ok.length)throw new Error('tidak ada model Flash yang tersedia untuk key ini');
-    fillModels(ok,ok.find(n=>!/lite/.test(n))||ok[0]);
-    $('#msg').textContent='';
-  }catch(e){$('#msg').textContent='Gagal memuat daftar model (cek key): '+e.message}
-}
-$('#key').onchange=()=>{try{localStorage.setItem('mk_gemini',$('#key').value.trim())}catch(e){}detect()};
-$('#model').onchange=()=>{try{localStorage.setItem('mm_gemini',$('#model').value)}catch(e){}};
-detect();
+const items=[];let dir=null;
 const wait=ms=>new Promise(r=>setTimeout(r,ms));
-async function call(key,model,sys,b64,txt){
-  const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model)+':generateContent',{method:'POST',
-    headers:{'content-type':'application/json','x-goog-api-key':key},
-    body:JSON.stringify({systemInstruction:{parts:[{text:sys}]},
-      contents:[{role:'user',parts:[{inline_data:{mime_type:'image/jpeg',data:b64}},{text:txt}]}],
-      generationConfig:{responseMimeType:'application/json',maxOutputTokens:4096}})});
-  const d=await r.json();
-  return{ok:r.ok,status:r.status,msg:d.error?.message,text:r.ok?(d.candidates?.[0]?.content?.parts||[]).filter(x=>!x.thought).map(x=>x.text||'').join(''):''};
-}
+const store=(k,v)=>{try{if(v===undefined)return localStorage.getItem(k)||'';localStorage.setItem(k,v)}catch(e){return ''}};
+const toast=(t,er)=>{const m=$('#msg');m.textContent=t;m.className=er?'er':''};
 
 /* ---------- metadata writers ---------- */
 const enc=new TextEncoder();
@@ -146,60 +156,123 @@ function injectSVG(buf,m){
   return '<?xml version="1.0" encoding="UTF-8"?>\n'+new XMLSerializer().serializeToString(svg);
 }
 
-/* ---------- items & UI ---------- */
-const meta=it=>{
+
+/* ---------- nama file, metadata, kartu ---------- */
+const slug=s=>s.toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,60).replace(/-+$/,'');
+const extOf=it=>it.svg?'.svg':'.jpg';
+function meta(it){
   const seen=new Set(),kw=[];
   it.k.value.split(',').map(s=>s.trim()).filter(Boolean).forEach(k=>{const l=k.toLowerCase();if(!seen.has(l)){seen.add(l);kw.push(k)}});
   return{title:it.t.value.trim(),desc:it.d.value.trim(),kw};
-};
-const setSt=(it,txt,cls='')=>{const s=it.el.querySelector('.st');s.textContent=txt;s.className='st '+cls};
-function upd(it){
-  const P=PRESET[$('#ag').value],m=meta(it);
-  const put=(sel,n,max)=>{const e=it.el.querySelector(sel);e.textContent=n+'/'+max;e.className=sel.slice(1)+(n>max?' over':'')};
-  put('.ct',m.title.length,P.t);put('.cd',m.desc.length,200);put('.ck',m.kw.length,P.k);
+}
+function names(){
+  const out=new Map();
+  if(!$('#ren').checked){items.forEach(it=>out.set(it,it.file.name));return out}
+  const base=it=>slug(meta(it).kw[0]||'')||slug(it.file.name.replace(/\.[^.]+$/,''))||'file';
+  const cnt={},seq={};
+  items.forEach(it=>{const k=base(it)+extOf(it);cnt[k]=(cnt[k]||0)+1});
+  items.forEach(it=>{const b=base(it),k=b+extOf(it);let n=b;
+    if(cnt[k]>1){seq[k]=(seq[k]||0)+1;n=b+'-'+String(seq[k]).padStart(2,'0')}
+    out.set(it,n+extOf(it))});
+  return out;
+}
+function updAll(){
+  const P=PRESET[$('#ag').value],nm=names();
+  items.forEach(it=>{
+    const m=meta(it),q=(s,n,mx)=>{const e=it.el.querySelector(s);e.textContent=n+'/'+mx;e.classList.toggle('over',n>mx)};
+    q('.ct',m.title.length,P.t);q('.cd',m.desc.length,200);q('.ck',m.kw.length,P.k);
+    it.el.querySelector('.nn').textContent=nm.get(it);
+  });
+}
+const LBL={idle:'Belum diproses',queue:'Antre',run:'Memproses...',done:'Metadata siap',err:'Gagal',saved:'Tersimpan'};
+function stat(){
+  const c=s=>items.filter(i=>i.state===s).length;
+  $('#js').textContent=items.length?`${c('done')+c('saved')}/${items.length} siap · ${c('run')+c('queue')} diproses · ${c('err')} gagal`:'Belum ada file';
+}
+function setSt(it,s,txt){it.state=s;it.el.dataset.s=s;const p=it.el.querySelector('.pill');p.textContent=txt||LBL[s];p.title=txt||LBL[s];stat()}
+function setJob(label,d,t){$('#jl').textContent=label+(t?` (${d}/${t})`:'');$('#jbar').style.width=t?Math.round(d/t*100)+'%':'0'}
+async function runPool(list,n,fn){let i=0;const w=async()=>{while(i<list.length){const x=list[i++];await fn(x)}};await Promise.all(Array.from({length:Math.min(n,list.length)},w))}
+
+let pq=Promise.resolve();
+async function prep(it){
+  const img=new Image();
+  await new Promise((ok,no)=>{img.onload=ok;img.onerror=()=>no(new Error('gambar gagal dibaca'));img.src=it.thumb});
+  const W=img.naturalWidth||768,H=img.naturalHeight||768,sc=Math.min(1,768/Math.max(W,H));
+  const c=document.createElement('canvas');c.width=Math.round(W*sc);c.height=Math.round(H*sc);
+  const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(img,0,0,c.width,c.height);
+  it.b64=c.toDataURL('image/jpeg',.72).split(',')[1];
 }
 function addCard(it){
-  const el=document.createElement('div');el.className='card';
-  el.innerHTML=`<img alt=""><div class="f"><div><b class="n"></b> <span class="st"></span></div>
-  <div><div class="h"><span>Judul</span><span class="ct"></span></div><input class="t"></div>
-  <div><div class="h"><span>Deskripsi</span><span class="cd"></span></div><textarea class="d" rows="2"></textarea></div>
-  <div><div class="h"><span>Keyword (pisahkan dengan koma)</span><span class="ck"></span></div><textarea class="k" rows="3"></textarea></div>
-  <div><button class="g">Generate</button> <button class="x">Hapus</button></div></div>`;
-  it.el=el;it.t=el.querySelector('.t');it.d=el.querySelector('.d');it.k=el.querySelector('.k');
-  el.querySelector('.n').textContent=it.file.name;
+  const el=document.createElement('article');el.className='card';el.dataset.s='idle';
+  el.innerHTML=`<div class="pb"><i></i></div><div class="th"><img alt=""><code class="nn"></code></div><div class="f">
+  <div class="hd"><b class="n0"></b><span class="pill">${LBL.idle}</span></div>
+  <div><label>Judul <em class="ct"></em></label><input class="t"></div>
+  <div><label>Deskripsi <em class="cd"></em></label><textarea class="d" rows="2"></textarea></div>
+  <div><label>Keyword, pisahkan dengan koma <em class="ck"></em></label><textarea class="k" rows="3"></textarea></div>
+  <div class="row"><button class="g">Generate</button><button class="x">Hapus</button></div></div>`;
+  it.el=el;it.t=el.querySelector('.t');it.d=el.querySelector('.d');it.k=el.querySelector('.k');it.state='idle';
+  el.querySelector('.n0').textContent=it.file.name;
   it.thumb=URL.createObjectURL(it.file);el.querySelector('img').src=it.thumb;
-  [it.t,it.d,it.k].forEach(e=>e.oninput=()=>upd(it));
+  [it.t,it.d,it.k].forEach(e=>e.oninput=updAll);
   el.querySelector('.g').onclick=()=>gen(it);
-  el.querySelector('.x').onclick=()=>{items.splice(items.indexOf(it),1);el.remove()};
-  $('#list').appendChild(el);upd(it);
+  el.querySelector('.x').onclick=()=>{items.splice(items.indexOf(it),1);el.remove();updAll();stat()};
+  $('#list').appendChild(el);
+  it.ready=pq=pq.then(()=>prep(it)).catch(()=>{});
 }
 function addFiles(files){
-  $('#msg').textContent='';const bad=[];
+  toast('');const bad=[];
   for(const f of files){
     const svg=/\.svg$/i.test(f.name);
     if(!svg&&!/\.jpe?g$/i.test(f.name)){bad.push(f.name);continue}
     const it={file:f,svg};items.push(it);addCard(it);
   }
-  if(bad.length)$('#msg').textContent='Dilewati (hanya JPG dan SVG yang didukung): '+bad.join(', ');
+  updAll();stat();
+  if(bad.length)toast('Dilewati (hanya JPG dan SVG yang didukung): '+bad.join(', '),1);
 }
-const dz=$('#drop');
-dz.onclick=()=>$('#pick').click();
-dz.onkeydown=e=>{if(e.key==='Enter')$('#pick').click()};
-$('#pick').onchange=e=>{addFiles(e.target.files);e.target.value=''};
-dz.ondragover=e=>{e.preventDefault();dz.classList.add('on')};
-dz.ondragleave=()=>dz.classList.remove('on');
-dz.ondrop=e=>{e.preventDefault();dz.classList.remove('on');addFiles(e.dataTransfer.files)};
-$('#ag').onchange=()=>items.forEach(upd);
-$('#clear').onclick=()=>{items.length=0;$('#list').innerHTML=''};
 
-/* ---------- AI generation ---------- */
-async function prep(it){
-  const img=new Image();
-  await new Promise((ok,no)=>{img.onload=ok;img.onerror=()=>no(new Error('gambar gagal dibaca'));img.src=it.thumb});
-  const W=img.naturalWidth||1024,H=img.naturalHeight||1024,sc=Math.min(1,1024/Math.max(W,H));
-  const c=document.createElement('canvas');c.width=Math.round(W*sc);c.height=Math.round(H*sc);
-  const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(img,0,0,c.width,c.height);
-  it.b64=c.toDataURL('image/jpeg',.82).split(',')[1];
+/* ---------- pengaturan & Gemini ---------- */
+$('#key').value=store('mk_gemini');
+$('#par').value=store('par')||'3';
+$('#par').onchange=()=>store('par',$('#par').value);
+$('#ag').onchange=updAll;$('#ren').onchange=updAll;
+$('#help').innerHTML='Belum punya key? <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Buka Google AI Studio</a>, login dengan akun Google, klik Create API key, salin, lalu tempel di kolom key. Cukup sekali. Kecepatan tier gratis dibatasi Google per menit, jadi menaikkan angka "diproses bersamaan" tidak selalu mempercepat.';
+function fillModels(list,pick){
+  const sel=$('#model');let sv='';
+  sel.innerHTML=list.map(m=>`<option value="${m}">${m}</option>`).join('');
+  try{sv=localStorage.getItem('mm_gemini')||''}catch(e){}
+  sel.value=list.includes(sv)?sv:(pick||list[0]);
+}
+fillModels(['gemini-2.5-flash','gemini-2.5-flash-lite']);
+async function detect(){
+  const key=$('#key').value.trim();if(!key)return;
+  try{
+    const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models?pageSize=200',{headers:{'x-goog-api-key':key}});
+    const d=await r.json();if(!r.ok)throw new Error(d.error?.message||('HTTP '+r.status));
+    const bad=/image|tts|audio|live|embed|thinking|exp|robotics|computer/;
+    const v=n=>parseFloat(n.match(/^gemini-(\d+(?:\.\d+)?)/)[1]);
+    const ok=(d.models||[]).filter(m=>(m.supportedGenerationMethods||[]).includes('generateContent'))
+      .map(m=>m.name.replace('models/','')).filter(n=>!bad.test(n)&&/^gemini-\d+(\.\d+)?-flash/.test(n))
+      .sort((a,b)=>v(b)-v(a)||(/lite/.test(a)-/lite/.test(b))||(/preview/.test(a)-/preview/.test(b)));
+    if(!ok.length)throw new Error('tidak ada model Flash yang tersedia untuk key ini');
+    fillModels(ok,ok.find(n=>!/lite/.test(n))||ok[0]);
+    $('#msg').textContent='';
+  }catch(e){$('#msg').textContent='Gagal memuat daftar model (cek key): '+e.message}
+}
+$('#key').onchange=()=>{try{localStorage.setItem('mk_gemini',$('#key').value.trim())}catch(e){}detect()};
+$('#model').onchange=()=>{try{localStorage.setItem('mm_gemini',$('#model').value)}catch(e){}};
+detect();
+
+async function call(key,model,sys,b64,txt,think=true){
+  const gc={responseMimeType:'application/json',maxOutputTokens:4096};
+  const v=parseFloat((model.match(/gemini-(\d+(?:\.\d+)?)/)||[])[1]);
+  if(think&&/flash/.test(model))gc.thinkingConfig=v>=3?{thinkingLevel:'low'}:{thinkingBudget:0};
+  const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model)+':generateContent',{method:'POST',
+    headers:{'content-type':'application/json','x-goog-api-key':key},
+    body:JSON.stringify({systemInstruction:{parts:[{text:sys}]},
+      contents:[{role:'user',parts:[{inline_data:{mime_type:'image/jpeg',data:b64}},{text:txt}]}],generationConfig:gc})});
+  const d=await r.json();
+  if(!r.ok&&think&&r.status===400&&/think/i.test(d.error?.message||''))return call(key,model,sys,b64,txt,false);
+  return{ok:r.ok,status:r.status,msg:d.error?.message,text:r.ok?(d.candidates?.[0]?.content?.parts||[]).filter(x=>!x.thought).map(x=>x.text||'').join(''):''};
 }
 const sysPrompt=P=>`You write metadata for microstock agencies (Adobe Stock, Shutterstock). Reply with ONLY a JSON object: {"title":string,"description":string,"keywords":string[]}.
 Rules, all in English:
@@ -207,64 +280,91 @@ Rules, all in English:
 - description: 1-2 sentences, max 200 characters, adds detail not in the title (setting, colors, mood, possible use).
 - keywords: up to ${P.k} items ordered from most to least relevant. Single words or short 2-3 word phrases, lowercase, no duplicates, no brands. Mix literal subjects with concepts, mood and use cases.
 - Describe only what is actually visible. Do not invent details.`;
+
 async function gen(it){
   const key=$('#key').value.trim();
-  if(!key){$('#msg').textContent='Isi Gemini API key dulu (petunjuk ada di bawah kolom key).';return}
+  if(!key){setSt(it,'err','Isi Gemini API key dulu');toast('Isi Gemini API key di bagian Pengaturan.',1);return}
   const P=PRESET[$('#ag').value],hint=$('#hint').value.trim();
-  const b=it.el.querySelector('.g');b.disabled=true;setSt(it,'Membuat metadata...');
+  setSt(it,'run','Membuat metadata...');
   try{
-    if(!it.b64)await prep(it);
+    await it.ready;if(!it.b64)throw new Error('gambar gagal dibaca');
     const txt=`Asset type: ${it.svg?'vector illustration':'photo or raster image'}. Extra context: ${hint||'none'}.`;
     const sel=$('#model'),order=[sel.value,...[...sel.options].map(o=>o.value).filter(v=>v!==sel.value)].slice(0,3);
-    const busy=[429,500,503,504];let res;
+    const busy=[429,500,503,504];let res,used=order[0];
     for(const mdl of order){
+      used=mdl;
       for(let n=0;n<3;n++){
         res=await call(key,mdl,sysPrompt(P),it.b64,txt);
         if(!busy.includes(res.status))break;
-        setSt(it,`${mdl} sedang sibuk, mencoba lagi (${n+1}/3)...`);
-        await wait(res.status===429?20000:5000*(n+1));
+        setSt(it,'run',`${mdl} sibuk, mencoba lagi (${n+1}/3)...`);
+        await wait(res.status===429?15000:4000*(n+1));
       }
       if(!busy.includes(res.status))break;
-      setSt(it,`${mdl} tetap sibuk, pindah ke model lain...`);
+      setSt(it,'run',`${mdl} tetap sibuk, pindah model...`);
     }
     if(!res.ok)throw new Error(res.msg||('HTTP '+res.status));
-    if(!res.text)throw new Error('respons kosong (mungkin diblokir filter), coba lagi');
+    if(!res.text)throw new Error('respons kosong, coba lagi');
     const j=JSON.parse(res.text.replace(/```json|```/g,'').trim());
     let t=(j.title||'').trim();if(t.length>P.t)t=t.slice(0,P.t).replace(/\s+\S*$/,'');
     it.t.value=t;it.d.value=(j.description||'').trim().slice(0,200);
     it.k.value=(j.keywords||[]).slice(0,P.k).join(', ');
-    upd(it);setSt(it,'Siap','ok');
-  }catch(e){setSt(it,'Gagal: '+e.message,'er')}
-  b.disabled=false;
+    updAll();setSt(it,'done','Metadata siap · '+used);
+  }catch(e){setSt(it,'err','Gagal: '+e.message)}
 }
-$('#all').onclick=async()=>{const a=$('#all');a.disabled=true;for(const it of items.slice())if(!it.t.value){await gen(it);await wait(GAP)}a.disabled=false};
+async function genAll(){
+  const todo=items.filter(it=>!it.t.value&&it.state!=='run');
+  if(!todo.length)return toast('Semua file sudah punya metadata.');
+  toast('');$('#all').disabled=true;todo.forEach(it=>setSt(it,'queue','Antre'));
+  let d=0;setJob('Membuat metadata',0,todo.length);
+  await runPool(todo,+$('#par').value,async it=>{await gen(it);setJob('Membuat metadata',++d,todo.length)});
+  setJob('Selesai membuat metadata',todo.length,todo.length);$('#all').disabled=false;
+}
 
-/* ---------- save & export ---------- */
-$('#save').onclick=async()=>{
-  let dir=null;
-  if(window.showDirectoryPicker){
-    $('#msg').textContent='Pilih folder tujuan yang berbeda dari folder asli agar file asli tetap aman.';
-    try{dir=await showDirectoryPicker({mode:'readwrite'})}catch(e){$('#msg').textContent='';return}
-    $('#msg').textContent='';
-  }
-  for(const it of items){
-    const m=meta(it);if(!m.title&&!m.kw.length)continue;
+/* ---------- simpan & CSV ---------- */
+async function pickDir(){
+  if(!window.showDirectoryPicker){toast('Browser ini tidak bisa memilih folder. Pakai Chrome atau Edge; jika tidak, file diunduh satu per satu.',1);return}
+  try{dir=await showDirectoryPicker({mode:'readwrite'});$('#dirname').textContent=dir.name;toast('')}catch(e){}
+}
+async function saveAll(){
+  const list=items.filter(it=>{const m=meta(it);return m.title||m.kw.length});
+  if(!list.length)return toast('Belum ada metadata untuk disimpan. Klik Generate dulu.',1);
+  if(!dir&&window.showDirectoryPicker){await pickDir();if(!dir)return}
+  $('#save').disabled=true;const nm=names();let d=0;setJob('Menyimpan file',0,list.length);
+  for(const it of list){
     try{
-      const buf=await it.file.arrayBuffer(),out=it.svg?injectSVG(buf,m):injectJPEG(buf,m);
-      const blob=new Blob([out],{type:it.svg?'image/svg+xml':'image/jpeg'});
-      if(dir){const w=await(await dir.getFileHandle(it.file.name,{create:true})).createWritable();await w.write(blob);await w.close()}
-      else{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=it.file.name;a.click();await new Promise(r=>setTimeout(r,300))}
-      setSt(it,'Tersimpan','ok');
-    }catch(e){setSt(it,'Gagal simpan: '+e.message,'er')}
+      const name=nm.get(it),m=meta(it),buf=await it.file.arrayBuffer();
+      const blob=new Blob([it.svg?injectSVG(buf,m):injectJPEG(buf,m)],{type:it.svg?'image/svg+xml':'image/jpeg'});
+      if(dir){const w=await(await dir.getFileHandle(name,{create:true})).createWritable();await w.write(blob);await w.close()}
+      else{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();await wait(300)}
+      setSt(it,'saved','Tersimpan: '+name);
+    }catch(e){setSt(it,'err','Gagal simpan: '+e.message)}
+    setJob('Menyimpan file',++d,list.length);
   }
-};
-$('#csv').onclick=()=>{
-  const q=s=>'"'+(s||'').replace(/"/g,'""')+'"';
-  const rows=[['Filename','Title','Description','Keywords']];
-  items.forEach(it=>{const m=meta(it);rows.push([it.file.name,m.title,m.desc,m.kw.join(', ')])});
+  setJob('Selesai menyimpan',list.length,list.length);$('#save').disabled=false;
+}
+function csv(){
+  const ag=$('#ag').value,nm=names(),q=s=>'"'+String(s||'').replace(/"/g,'""')+'"';
+  const H={adobe:['Filename','Title','Keywords','Category','Releases'],
+    shutter:['Filename','Description','Keywords','Categories','Editorial','Mature content','illustration'],
+    generic:['Filename','Title','Description','Keywords']};
+  const R={adobe:(f,m)=>[f,m.title,m.kw.join(', '),'',''],
+    shutter:(f,m,it)=>[f,m.desc||m.title,m.kw.join(', '),'','no','no',it.svg?'yes':'no'],
+    generic:(f,m)=>[f,m.title,m.desc,m.kw.join(', ')]};
+  const rows=[H[ag],...items.map(it=>R[ag](nm.get(it),meta(it),it))];
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob(['\ufeff'+rows.map(r=>r.map(q).join(',')).join('\r\n')],{type:'text/csv'}));
-  a.download='metadata.csv';a.click();
-};
+  a.download='metadata-'+ag+'.csv';a.click();
+}
+
+/* ---------- tombol & drop ---------- */
+const dz=$('#drop');
+dz.onclick=()=>$('#pick').click();
+dz.onkeydown=e=>{if(e.key==='Enter')$('#pick').click()};
+$('#pick').onchange=e=>{addFiles(e.target.files);e.target.value=''};
+dz.ondragover=e=>{e.preventDefault();dz.classList.add('on')};
+dz.ondragleave=()=>dz.classList.remove('on');
+dz.ondrop=e=>{e.preventDefault();dz.classList.remove('on');addFiles(e.dataTransfer.files)};
+$('#all').onclick=genAll;$('#pd').onclick=pickDir;$('#save').onclick=saveAll;$('#csv').onclick=csv;
+$('#clear').onclick=()=>{items.length=0;$('#list').innerHTML='';setJob('Siap digunakan',0,0);stat()};
 </script>
 </body></html>
