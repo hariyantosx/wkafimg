@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Microstock Metadata</title>
+<style>
+:root{--bg:#f4f5f2;--fg:#1b1f1d;--card:#fff;--mut:#65706a;--bd:#d6dbd6;--ac:#146b5a;--er:#b3261e}
+@media(prefers-color-scheme:dark){:root{--bg:#141716;--fg:#e8ece9;--card:#1d2120;--mut:#8f9b95;--bd:#303634;--ac:#45b8a0;--er:#f2726b}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:940px;margin:0 auto;padding:22px 16px 70px}
+h1{font-size:22px;margin:0 0 2px}
+.s{color:var(--mut);margin:0 0 16px}
+.bar{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:10px}
+label{font-size:12px;color:var(--mut);display:block;margin-bottom:3px}
+input,select,textarea{width:100%;padding:8px 10px;border:1px solid var(--bd);border-radius:8px;background:var(--card);color:var(--fg);font:inherit}
+input:focus-visible,select:focus-visible,textarea:focus-visible,button:focus-visible{outline:2px solid var(--ac);outline-offset:1px}
+textarea{resize:vertical}
+button{padding:9px 14px;border-radius:8px;border:1px solid var(--bd);background:var(--card);color:var(--fg);font:inherit;cursor:pointer}
+button.p{background:var(--ac);border-color:var(--ac);color:#fff}
+button:disabled{opacity:.5;cursor:default}
+#drop{border:2px dashed var(--bd);border-radius:12px;padding:26px 16px;text-align:center;color:var(--mut);margin:12px 0;cursor:pointer}
+#drop.on{border-color:var(--ac);color:var(--ac)}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+#msg{color:var(--er);font-size:13px;min-height:18px;margin-bottom:6px}
+.card{display:flex;gap:14px;background:var(--card);border:1px solid var(--bd);border-radius:10px;padding:12px;margin-bottom:12px}
+.card img{width:130px;height:130px;object-fit:contain;background:rgba(128,128,128,.15);border-radius:6px;flex:none}
+.f{flex:1;min-width:0}
+.f>div{margin-bottom:8px}
+.h{display:flex;justify-content:space-between;font-size:12px;color:var(--mut);margin-bottom:2px}
+.st{font-size:12px;color:var(--mut)}
+.st.ok{color:var(--ac)}
+.st.er,.over{color:var(--er)}
+@media(max-width:560px){.card{flex-direction:column}.card img{width:100%;height:180px}}
+</style></head>
+<body><main>
+<h1>Microstock Metadata</h1>
+<p class="s">Buat judul, deskripsi, dan keyword dengan AI, lalu sisipkan langsung ke file JPG atau SVG (IPTC + XMP).</p>
+
+<div class="bar">
+  <div><label for="key">Anthropic API key</label><input id="key" type="password" placeholder="sk-ant-..." autocomplete="off"></div>
+  <div><label for="model">Model</label><input id="model" value="claude-sonnet-5"></div>
+  <div><label for="ag">Agensi</label>
+    <select id="ag"><option value="adobe">Adobe Stock (judul 70, keyword 49)</option><option value="shutter">Shutterstock (deskripsi 200, keyword 50)</option><option value="generic">Umum (judul 100, keyword 50)</option></select></div>
+</div>
+<div style="margin-bottom:10px"><label for="hint">Konteks tambahan (opsional, berlaku untuk semua file)</label>
+  <input id="hint" placeholder="contoh: ilustrasi flat untuk tema bisnis, gaya minimalis"></div>
+
+<div id="drop" tabindex="0" role="button">Tarik file JPG / SVG ke sini, atau klik untuk memilih</div>
+<input id="pick" type="file" multiple accept=".jpg,.jpeg,.svg" hidden>
+<div id="msg"></div>
+
+<div class="acts">
+  <button class="p" id="all">Generate semua</button>
+  <button id="save">Simpan file + metadata</button>
+  <button id="csv">Export CSV</button>
+  <button id="clear">Kosongkan daftar</button>
+</div>
+<div id="list"></div>
+</main>
+
+<script>
+const $=s=>document.querySelector(s);
+const PRESET={adobe:{t:70,k:49},shutter:{t:200,k:50},generic:{t:100,k:50}};
+const items=[];
+try{$('#key').value=localStorage.getItem('mk')||''}catch(e){}
+$('#key').onchange=()=>{try{localStorage.setItem('mk',$('#key').value.trim())}catch(e){}};
+
+/* ---------- metadata writers ---------- */
+const enc=new TextEncoder();
+const cat=a=>{let n=0;a.forEach(x=>n+=x.length);const o=new Uint8Array(n);let p=0;a.forEach(x=>{o.set(x,p);p+=x.length});return o};
+const esc=s=>s.replace(/[<>&"]/g,c=>({'<':'&lt;','>':'&gt;','&':'&amp;','"':'&quot;'}[c]));
+const alt=(tag,v)=>`<dc:${tag}><rdf:Alt><rdf:li xml:lang="x-default">${esc(v)}</rdf:li></rdf:Alt></dc:${tag}>`;
+const rdf=m=>`<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"><rdf:Description rdf:about="" xmlns:dc="http://purl.org/dc/elements/1.1/">${alt('title',m.title)}${alt('description',m.desc)}<dc:subject><rdf:Bag>${m.kw.map(k=>`<rdf:li>${esc(k)}</rdf:li>`).join('')}</rdf:Bag></dc:subject></rdf:Description></rdf:RDF>`;
+const xmp=m=>`<?xpacket begin="\ufeff" id="W5M0MpCehiHzreSzNTczkc9d"?><x:xmpmeta xmlns:x="adobe:ns:meta/">${rdf(m)}</x:xmpmeta><?xpacket end="w"?>`;
+const seg=(mk,d)=>{const l=d.length+2;if(l>65535)throw new Error('metadata terlalu panjang');return cat([[0xFF,mk,l>>8,l&255],d])};
+const ds=(r,n,s)=>{if(!s)return new Uint8Array(0);const b=enc.encode(s);return cat([[0x1c,r,n,b.length>>8,b.length&255],b])};
+function iptc(m){
+  const p=[ds(1,90,'\x1b%G'),ds(2,5,m.title),ds(2,120,m.desc)];
+  m.kw.forEach(k=>p.push(ds(2,25,k)));
+  const d=cat(p),n=d.length;
+  const res=cat([enc.encode('8BIM'),[4,4],[0,0],[n>>>24,(n>>16)&255,(n>>8)&255,n&255],d,n%2?[0]:[]]);
+  return seg(0xED,cat([enc.encode('Photoshop 3.0\0'),res]));
+}
+function injectJPEG(buf,m){
+  const u=new Uint8Array(buf);
+  if(u[0]!==0xFF||u[1]!==0xD8)throw new Error('bukan file JPEG');
+  const has=(s,i,t)=>[...t].every((c,j)=>s[i+j]===c.charCodeAt(0));
+  let p=2;const segs=[];
+  while(p<u.length&&u[p]===0xFF&&u[p+1]!==0xDA){
+    const len=(u[p+2]<<8)|u[p+3],s=u.subarray(p,p+2+len);
+    const skip=(u[p+1]===0xE1&&has(s,4,'http://ns.adobe.com/xap/1.0/'))||(u[p+1]===0xED&&has(s,4,'Photoshop 3.0'));
+    if(!skip)segs.push(s);
+    p+=2+len;
+  }
+  let i=0;while(i<segs.length&&segs[i][1]>=0xE0&&segs[i][1]<=0xEF)i++;
+  const x=seg(0xE1,cat([enc.encode('http://ns.adobe.com/xap/1.0/\0'),enc.encode(xmp(m))]));
+  return cat([u.subarray(0,2),...segs.slice(0,i),iptc(m),x,...segs.slice(i),u.subarray(p)]);
+}
+function injectSVG(buf,m){
+  const P=new DOMParser(),doc=P.parseFromString(new TextDecoder().decode(buf),'image/svg+xml'),svg=doc.documentElement;
+  if(svg.nodeName!=='svg'||doc.querySelector('parsererror'))throw new Error('SVG tidak valid');
+  const NS='http://www.w3.org/2000/svg';
+  [...svg.children].filter(e=>['title','desc','metadata'].includes(e.localName)).forEach(e=>e.remove());
+  const t=doc.createElementNS(NS,'title');t.textContent=m.title;
+  const d=doc.createElementNS(NS,'desc');d.textContent=m.desc;
+  const md=doc.createElementNS(NS,'metadata');
+  md.appendChild(doc.importNode(P.parseFromString(rdf(m),'image/svg+xml').documentElement,true));
+  svg.prepend(md);svg.prepend(d);svg.prepend(t);
+  return '<?xml version="1.0" encoding="UTF-8"?>\n'+new XMLSerializer().serializeToString(svg);
+}
+
+/* ---------- items & UI ---------- */
+const meta=it=>{
+  const seen=new Set(),kw=[];
+  it.k.value.split(',').map(s=>s.trim()).filter(Boolean).forEach(k=>{const l=k.toLowerCase();if(!seen.has(l)){seen.add(l);kw.push(k)}});
+  return{title:it.t.value.trim(),desc:it.d.value.trim(),kw};
+};
+const setSt=(it,txt,cls='')=>{const s=it.el.querySelector('.st');s.textContent=txt;s.className='st '+cls};
+function upd(it){
+  const P=PRESET[$('#ag').value],m=meta(it);
+  const put=(sel,n,max)=>{const e=it.el.querySelector(sel);e.textContent=n+'/'+max;e.className=sel.slice(1)+(n>max?' over':'')};
+  put('.ct',m.title.length,P.t);put('.cd',m.desc.length,200);put('.ck',m.kw.length,P.k);
+}
+function addCard(it){
+  const el=document.createElement('div');el.className='card';
+  el.innerHTML=`<img alt=""><div class="f"><div><b class="n"></b> <span class="st"></span></div>
+  <div><div class="h"><span>Judul</span><span class="ct"></span></div><input class="t"></div>
+  <div><div class="h"><span>Deskripsi</span><span class="cd"></span></div><textarea class="d" rows="2"></textarea></div>
+  <div><div class="h"><span>Keyword (pisahkan dengan koma)</span><span class="ck"></span></div><textarea class="k" rows="3"></textarea></div>
+  <div><button class="g">Generate</button> <button class="x">Hapus</button></div></div>`;
+  it.el=el;it.t=el.querySelector('.t');it.d=el.querySelector('.d');it.k=el.querySelector('.k');
+  el.querySelector('.n').textContent=it.file.name;
+  it.thumb=URL.createObjectURL(it.file);el.querySelector('img').src=it.thumb;
+  [it.t,it.d,it.k].forEach(e=>e.oninput=()=>upd(it));
+  el.querySelector('.g').onclick=()=>gen(it);
+  el.querySelector('.x').onclick=()=>{items.splice(items.indexOf(it),1);el.remove()};
+  $('#list').appendChild(el);upd(it);
+}
+function addFiles(files){
+  $('#msg').textContent='';const bad=[];
+  for(const f of files){
+    const svg=/\.svg$/i.test(f.name);
+    if(!svg&&!/\.jpe?g$/i.test(f.name)){bad.push(f.name);continue}
+    const it={file:f,svg};items.push(it);addCard(it);
+  }
+  if(bad.length)$('#msg').textContent='Dilewati (hanya JPG dan SVG yang didukung): '+bad.join(', ');
+}
+const dz=$('#drop');
+dz.onclick=()=>$('#pick').click();
+dz.onkeydown=e=>{if(e.key==='Enter')$('#pick').click()};
+$('#pick').onchange=e=>{addFiles(e.target.files);e.target.value=''};
+dz.ondragover=e=>{e.preventDefault();dz.classList.add('on')};
+dz.ondragleave=()=>dz.classList.remove('on');
+dz.ondrop=e=>{e.preventDefault();dz.classList.remove('on');addFiles(e.dataTransfer.files)};
+$('#ag').onchange=()=>items.forEach(upd);
+$('#clear').onclick=()=>{items.length=0;$('#list').innerHTML=''};
+
+/* ---------- AI generation ---------- */
+async function prep(it){
+  const img=new Image();
+  await new Promise((ok,no)=>{img.onload=ok;img.onerror=()=>no(new Error('gambar gagal dibaca'));img.src=it.thumb});
+  const W=img.naturalWidth||1024,H=img.naturalHeight||1024,sc=Math.min(1,1024/Math.max(W,H));
+  const c=document.createElement('canvas');c.width=Math.round(W*sc);c.height=Math.round(H*sc);
+  const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(img,0,0,c.width,c.height);
+  it.b64=c.toDataURL('image/jpeg',.82).split(',')[1];
+}
+const sysPrompt=P=>`You write metadata for microstock agencies (Adobe Stock, Shutterstock). Reply with ONLY a JSON object: {"title":string,"description":string,"keywords":string[]}.
+Rules, all in English:
+- title: one plain descriptive phrase, max ${P.t} characters, main subject first, then style/setting. No brand names, trademarks, real people's names, quotes or promotional words.
+- description: 1-2 sentences, max 200 characters, adds detail not in the title (setting, colors, mood, possible use).
+- keywords: up to ${P.k} items ordered from most to least relevant. Single words or short 2-3 word phrases, lowercase, no duplicates, no brands. Mix literal subjects with concepts, mood and use cases.
+- Describe only what is actually visible. Do not invent details.`;
+async function gen(it){
+  const key=$('#key').value.trim();
+  if(!key){$('#msg').textContent='Isi API key dulu.';return}
+  const P=PRESET[$('#ag').value],hint=$('#hint').value.trim();
+  const b=it.el.querySelector('.g');b.disabled=true;setSt(it,'Membuat metadata...');
+  try{
+    if(!it.b64)await prep(it);
+    const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{
+      'content-type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01',
+      'anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:$('#model').value.trim(),max_tokens:1000,system:sysPrompt(P),messages:[{role:'user',content:[
+        {type:'image',source:{type:'base64',media_type:'image/jpeg',data:it.b64}},
+        {type:'text',text:`Asset type: ${it.svg?'vector illustration':'photo or raster image'}. Extra context: ${hint||'none'}.`}]}]})});
+    const d=await r.json();
+    if(!r.ok)throw new Error(d.error?.message||('HTTP '+r.status));
+    const j=JSON.parse(d.content.map(c=>c.text||'').join('').replace(/```json|```/g,'').trim());
+    let t=(j.title||'').trim();if(t.length>P.t)t=t.slice(0,P.t).replace(/\s+\S*$/,'');
+    it.t.value=t;it.d.value=(j.description||'').trim().slice(0,200);
+    it.k.value=(j.keywords||[]).slice(0,P.k).join(', ');
+    upd(it);setSt(it,'Siap','ok');
+  }catch(e){setSt(it,'Gagal: '+e.message,'er')}
+  b.disabled=false;
+}
+$('#all').onclick=async()=>{const a=$('#all');a.disabled=true;for(const it of items.slice())if(!it.t.value)await gen(it);a.disabled=false};
+
+/* ---------- save & export ---------- */
+$('#save').onclick=async()=>{
+  let dir=null;
+  if(window.showDirectoryPicker){
+    $('#msg').textContent='Pilih folder tujuan yang berbeda dari folder asli agar file asli tetap aman.';
+    try{dir=await showDirectoryPicker({mode:'readwrite'})}catch(e){$('#msg').textContent='';return}
+    $('#msg').textContent='';
+  }
+  for(const it of items){
+    const m=meta(it);if(!m.title&&!m.kw.length)continue;
+    try{
+      const buf=await it.file.arrayBuffer(),out=it.svg?injectSVG(buf,m):injectJPEG(buf,m);
+      const blob=new Blob([out],{type:it.svg?'image/svg+xml':'image/jpeg'});
+      if(dir){const w=await(await dir.getFileHandle(it.file.name,{create:true})).createWritable();await w.write(blob);await w.close()}
+      else{const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=it.file.name;a.click();await new Promise(r=>setTimeout(r,300))}
+      setSt(it,'Tersimpan','ok');
+    }catch(e){setSt(it,'Gagal simpan: '+e.message,'er')}
+  }
+};
+$('#csv').onclick=()=>{
+  const q=s=>'"'+(s||'').replace(/"/g,'""')+'"';
+  const rows=[['Filename','Title','Description','Keywords']];
+  items.forEach(it=>{const m=meta(it);rows.push([it.file.name,m.title,m.desc,m.kw.join(', ')])});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob(['\ufeff'+rows.map(r=>r.map(q).join(',')).join('\r\n')],{type:'text/csv'}));
+  a.download='metadata.csv';a.click();
+};
+</script>
+</body></html>
